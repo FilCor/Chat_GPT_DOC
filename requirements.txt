@@ -2,7 +2,7 @@ streamlit
 openai
 PyPDF2
 numpy
-faiss
+faiss-cpu
 wand
 pytesseract
 tiktoken
