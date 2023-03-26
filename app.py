@@ -16,7 +16,7 @@ from streamlit_chat import message
 
 
 # Function to extract text from PDF
-@st.cache_data
+
 def extract_text_from_pdf(pdf_file):
     # Use BytesIO to read the file content directly
     with BytesIO(pdf_file.getbuffer()) as file:
@@ -85,7 +85,6 @@ def chunk_text(text, max_length=2000):
 
 
 # Function to get embeddings
-@st.cache_data
 def get_embedding(text, model="text-embedding-ada-002"):
     text = text.replace("\n", " ")
     return openai.Embedding.create(input=[text], model=model)['data'][0]['embedding']
