@@ -93,6 +93,7 @@ def get_embedding(text, model="text-embedding-ada-002"):
 def interact_with_chatbot(context, message, max_response_length=200):
     prompt = f"{message}\n\n"
     for idx, chunk in enumerate(context):
+        prompt += "basati sul contesto che ti viene dato qui di seguito: \n\n"
         prompt += f"Context-{idx + 1}: {chunk}\n\n"
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -129,8 +130,11 @@ def main():
 
     #Settings
     st.sidebar.title("Impostazioni")
-    max_response_length = st.sidebar.slider("Lunghezza massima della risposta", min_value=100, max_value=1000, value=200)
+    max_response_length = st.sidebar.slider("Lunghezza massima della risposta", min_value=100, max_value=1000, value=500)
 
+    # Clear Conversation Button
+    st.sidebar.title("Clear Conversation")
+    clear_conversation = st.sidebar.button("Clear Conversation")
 
     # Extract and store text from PDFs
     pdf_texts = {}
@@ -138,8 +142,11 @@ def main():
         pdf_name = pdf_file.name
         pdf_texts[pdf_name] = extract_text_from_pdf(pdf_file)
 
-    # Embed and store the text
+
+    pdf_name_to_index_map = {}  # To store the mapping of PDF names to their index ranges in the vectorial database
     vectorial_db = {}  # To store embeddings along with the PDF names and text chunks
+
+    index_offset = 0
     for pdf_name, text in pdf_texts.items():
         chunks = chunk_text(text)
         embeddings = [get_embedding(chunk) for chunk in chunks]
@@ -148,12 +155,17 @@ def main():
             'embeddings': embeddings,
         }
 
+        pdf_name_to_index_map[pdf_name] = {
+            'start_idx': index_offset,
+            'end_idx': index_offset + len(embeddings) - 1
+        }
+        index_offset += len(embeddings)
+
     # Index embeddings in a vectorial database
 
     if vectorial_db:  # Add this check to ensure vectorial_db is not empty
         embedding_size = len(vectorial_db[list(vectorial_db.keys())[0]]['embeddings'][0])
         index = faiss.IndexFlatL2(embedding_size)
-
         for pdf_name, data in vectorial_db.items():
             for embedding in data['embeddings']:
                 index.add(np.array([embedding]))
@@ -167,16 +179,22 @@ def main():
         st.session_state['past'] = []
 
     user_input = st.text_input("Type your message here")
-    if user_input:
+    submit_button = st.button("Submit")
+    
+    if submit_button and user_input:
         context = []  # Initialize an empty context list
 
         if vectorial_db:  # Add this check to ensure vectorial_db is not empty
-            # Query vectorial database
+        # Query vectorial database
             user_embedding = get_embedding(user_input)
             D, I = index.search(np.array([user_embedding]), 5)
 
             # Set context
-            context = [vectorial_db[pdf_name]['chunks'][embedding_idx] for pdf_name, embedding_idx in zip(vectorial_db.keys(), I[0])]
+            for idx in I[0]:
+                for pdf_name, index_range in pdf_name_to_index_map.items():
+                    if index_range['start_idx'] <= idx <= index_range['end_idx']:
+                        context.append(vectorial_db[pdf_name]['chunks'][idx - index_range['start_idx']])
+                        break
 
         response = interact_with_chatbot(context, user_input, max_response_length)
 
@@ -193,6 +211,10 @@ def main():
     clear_context = st.sidebar.button("Cancella Informazioni")
     if clear_context:
         context = []
+
+    if clear_conversation:
+        st.session_state['past'] = []
+        st.session_state['generated'] = []
 
 if __name__ == "__main__":
     main()
