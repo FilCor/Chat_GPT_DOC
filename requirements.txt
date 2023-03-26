@@ -1,0 +1,10 @@
+streamlit
+openai
+PyPDF2
+numpy
+faiss
+wand
+pytesseract
+tiktoken
+pdf2image
+streamlit-chat
