@@ -109,6 +109,14 @@ def interact_with_chatbot(context, message, max_response_length=200):
     return response['choices'][0]['message']['content'].strip()
 
 
+def init_openai_api(api_key):
+    if api_key:
+        openai.api_key = api_key
+        return True
+    return False
+
+
+
 # Main app
 def main():
     
@@ -119,7 +127,16 @@ def main():
     # Set OpenAI API key
     st.sidebar.title("API Key")
     api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password")
-    openai.api_key = api_key
+    
+    if 'api_key_set' not in st.session_state:
+        st.session_state.api_key_set = False
+
+    if not st.session_state.api_key_set:
+        st.session_state.api_key_set = init_openai_api(api_key)
+
+    if not st.session_state.api_key_set:
+        st.error("Per favore, inserisci la tua API Key di OpenAI. Se non ne hai una puoi creare un account e crearne una qui: https://openai.com/blog/openai-api", icon="🚨")
+        return
     
     # if not api_key:
     #     st.error("Per favore, inserisci la tua API Key di OpenAI. Se non ne hai una puoi creare un account e crearne una qui: https://openai.com/blog/openai-api", icon="🚨")
