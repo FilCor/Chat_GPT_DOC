@@ -120,8 +120,9 @@ def main():
     st.sidebar.title("API Key")
     api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password")
     openai.api_key = api_key
-    if not api_key:
-        st.error("Per favore, inserisci la tua API Key di OpenAI. Se non ne hai una puoi creare un account e crearne una qui: https://openai.com/blog/openai-api", icon="🚨")
+    
+    # if not api_key:
+    #     st.error("Per favore, inserisci la tua API Key di OpenAI. Se non ne hai una puoi creare un account e crearne una qui: https://openai.com/blog/openai-api", icon="🚨")
 
     # Upload PDFs
     st.sidebar.title("Upload PDFs")
