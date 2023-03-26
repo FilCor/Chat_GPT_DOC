@@ -113,6 +113,9 @@ conversation_history = []
 
 # Main app
 def main():
+    
+    st.set_page_config(page_title='Chat With PDF', layout='wide',
+                   initial_sidebar_state=st.session_state.get('sidebar_state', 'expanded'))
     st.title("Chat with PDF")
 
     # Set OpenAI API key
