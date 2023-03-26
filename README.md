@@ -2,6 +2,10 @@
 
 Chat with PDF is a Streamlit-based web application that allows users to interact with a chatbot that has access to the content of uploaded PDF documents. Users can ask questions related to the PDFs, and the chatbot will respond with relevant information extracted from the documents.
 
+It is currently hosted as a Demo here: https://chatpdf.streamlit.app/
+
+You need an OpenAI API Key to use it. You can get one here https://openai.com/blog/openai-api
+
 ## Features
 
 - Upload one or more PDF documents.
